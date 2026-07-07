@@ -1,0 +1,45 @@
+[project]
+name = "research-copilot"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = []
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+src = ["ingestion", "vector_db", "llm", "api", "frontend", "evaluation"]
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort, import sorting
+    "N",      # pep8-naming
+    "UP",     # pyupgrade, modern syntax
+    "B",      # flake8-bugbear, common bug patterns
+    "C4",     # flake8-comprehensions
+    "SIM",    # flake8-simplify
+    "PTH",    # flake8-use-pathlib
+    "A",      # flake8-builtins, no shadowing builtins
+    "ARG",    # flake8-unused-arguments
+    "TID",    # flake8-tidy-imports
+    "PERF",   # perflint, obvious performance issues
+    "RUF",    # ruff-specific rules
+]
+ignore = [
+    "E501",   # line length is enforced by the formatter, not the linter
+]
+
+[tool.ruff.lint.per-file-ignores]
+"evaluation/*" = ["ARG001"]  # eval scripts often take unused CLI-style args
+"**/tests/*" = ["ARG", "S101"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["ingestion", "vector_db", "llm", "api", "frontend", "evaluation"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
