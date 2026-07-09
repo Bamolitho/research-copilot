@@ -43,3 +43,10 @@ known-first-party = ["ingestion", "vector_db", "llm", "api", "frontend", "evalua
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
+
+[dependency-groups]
+dev = [
+    "mypy>=2.2.0",
+    "pytest>=9.1.1",
+    "ruff>=0.15.20",
+]
