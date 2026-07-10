@@ -9,6 +9,7 @@ small and every HTTP call easy to audit, in line with the project's
 from __future__ import annotations
 
 import argparse
+import re
 import time
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
@@ -18,6 +19,10 @@ import requests
 
 ARXIV_API_URL = "http://export.arxiv.org/api/query"
 _ATOM_NS = {"atom": "http://www.w3.org/2005/Atom"}
+
+# Recognizes queries that already use arXiv's field syntax (e.g. "all:RAG
+# AND all:attention", "ti:transformer"), so we don't double-prefix them.
+_FIELD_PREFIX_PATTERN = re.compile(r"\b(all|ti|abs|cat|au|co|jr|rn|id):", re.IGNORECASE)
 
 # arXiv's own usage guideline asks for at most one request every 3 seconds.
 REQUEST_DELAY_SECONDS = 3.0
@@ -65,7 +70,10 @@ class ArxivDownloader:
         """Search arXiv and return paper metadata, most relevant first.
 
         Args:
-            query: Free-text query, e.g. "intrusion detection connected vehicles".
+            query: Either a plain-text topic, e.g. "attention mechanism"
+                (automatically searched across all fields), or an
+                already-qualified arXiv query, e.g.
+                "all:RAG AND all:attention" (used as-is, untouched).
             max_results: Maximum number of papers to return.
 
         Returns:
@@ -75,8 +83,9 @@ class ArxivDownloader:
         Raises:
             requests.HTTPError: If the arXiv API request fails.
         """
+        search_query = query if _FIELD_PREFIX_PATTERN.search(query) else f"all:{query}"
         params = {
-            "search_query": f"all:{query}",
+            "search_query": search_query,
             "start": 0,
             "max_results": max_results,
         }
@@ -194,9 +203,7 @@ def _run_cli() -> None:
         help="Maximum number of papers to fetch per topic (default: 20)",
     )
     parser.add_argument(
-        "--download-dir",
-        default="data/papers",
-        help="Directory to save PDFs into (default: data/papers)",
+        "--download-dir", default="data/papers", help="Directory to save PDFs into (default: data/papers)"
     )
     args = parser.parse_args()
 
