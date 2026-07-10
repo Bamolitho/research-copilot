@@ -203,7 +203,9 @@ def _run_cli() -> None:
         help="Maximum number of papers to fetch per topic (default: 20)",
     )
     parser.add_argument(
-        "--download-dir", default="data/papers", help="Directory to save PDFs into (default: data/papers)"
+        "--download-dir",
+        default="data/papers",
+        help="Directory to save PDFs into (default: data/papers)",
     )
     args = parser.parse_args()
 

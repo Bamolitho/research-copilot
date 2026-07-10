@@ -190,13 +190,23 @@ class TestCli:
             published="2024-01-01T00:00:00Z",
             pdf_url="https://arxiv.org/pdf/1234.5678.pdf",
         )
-        monkeypatch.setattr(downloader_module.ArxivDownloader, "search", lambda self, q, max_results: [fake_paper])
         monkeypatch.setattr(
-            downloader_module.ArxivDownloader, "download", lambda self, paper, overwrite=False: tmp_path / "1234.5678.pdf"
+            downloader_module.ArxivDownloader, "search", lambda self, q, max_results: [fake_paper]
+        )
+        monkeypatch.setattr(
+            downloader_module.ArxivDownloader,
+            "download",
+            lambda self, paper, overwrite=False: tmp_path / "1234.5678.pdf",
         )
         monkeypatch.setattr(
             "sys.argv",
-            ["downloader.py", "--query", "retrieval augmented generation", "--download-dir", str(tmp_path)],
+            [
+                "downloader.py",
+                "--query",
+                "retrieval augmented generation",
+                "--download-dir",
+                str(tmp_path),
+            ],
         )
 
         downloader_module._run_cli()
