@@ -1,5 +1,7 @@
+*.ppt
 projet.md
 dev/
+data/papers/*
 
 # =================================================================
 # Byte-compiled / optimized / DLL files
