@@ -81,6 +81,29 @@ class TestSearch:
         assert papers[0].arxiv_id == "hep-ex/0307069v1"
         assert papers[0].pdf_url == "https://arxiv.org/pdf/hep-ex/0307069v1.pdf"
 
+    def test_plain_query_is_auto_prefixed_with_all(
+        self, downloader: ArxivDownloader, mock_session: MagicMock
+    ) -> None:
+        mock_session.get.return_value = MagicMock(text=SAMPLE_FEED)
+
+        downloader.search("attention mechanism")
+
+        sent_params = mock_session.get.call_args.kwargs["params"]
+        assert sent_params["search_query"] == "all:attention mechanism"
+
+    def test_already_qualified_query_is_not_double_prefixed(
+        self, downloader: ArxivDownloader, mock_session: MagicMock
+    ) -> None:
+        # Regression test: "all:RAG AND all:attention" must NOT become
+        # "all:all:RAG AND all:attention" (arXiv returns 400 Bad Request
+        # for that malformed query).
+        mock_session.get.return_value = MagicMock(text=SAMPLE_FEED)
+
+        downloader.search("all:RAG AND all:attention")
+
+        sent_params = mock_session.get.call_args.kwargs["params"]
+        assert sent_params["search_query"] == "all:RAG AND all:attention"
+
 
 class TestDownload:
     def _make_paper(self) -> ArxivPaper:
