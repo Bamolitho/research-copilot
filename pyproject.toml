@@ -4,7 +4,10 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "pymupdf>=1.28.0",
+    "requests>=2.34.2",
+]
 
 [tool.ruff]
 line-length = 100
@@ -36,6 +39,10 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 "evaluation/*" = ["ARG001"]  # eval scripts often take unused CLI-style args
 "**/tests/*" = ["ARG", "S101"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["ingestion", "vector_db", "llm", "api", "frontend", "evaluation"]
