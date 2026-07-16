@@ -9,9 +9,10 @@ Turns source papers into clean, page-aware text ready for chunking. Two independ
 | `downloader.py` | Searches arXiv and downloads matching papers as PDFs. Has a CLI. |
 | `pdf_loader.py` | Extracts page-by-page text from a PDF file using PyMuPDF. Library only, no CLI. |
 | `chunker.py` | Splits a `ParsedDocument` into overlapping, page-aware chunks. Library only, no CLI. |
-| `__init__.py` | Makes this folder an importable package (`ingestion.downloader`, `ingestion.pdf_loader`, `ingestion.chunker`). |
+| `embeddings.py` | Turns chunks and questions into BGE-M3 dense vectors. Library only, no CLI. |
+| `__init__.py` | Makes this folder an importable package. |
 
-Corresponding tests live in `tests/test_downloader.py`, `tests/test_pdf_loader.py`, and `tests/test_chunker.py`, not in this folder — see [Running the tests](#running-the-tests).
+Corresponding tests live in `tests/test_downloader.py`, `tests/test_pdf_loader.py`, `tests/test_chunker.py`, and `tests/test_embeddings.py`, not in this folder — see [Running the tests](#running-the-tests).
 
 ## Requirements
 
@@ -86,6 +87,20 @@ for chunk in chunks:
 - Each `Chunk` records `page_start`/`page_end`, since a chunk can straddle a page break — this is what lets the retrieval layer cite "page X" later.
 - The last chunk of a document is **not padded** and may be shorter than `chunk_size`.
 
+### Embedding
+
+```python
+from ingestion.embeddings import Embedder
+
+embedder = Embedder()  # loads BAAI/bge-m3 on first use (a real, ~2GB download)
+embedded_chunks = embedder.embed_chunks(chunks)      # once, at indexing time
+query_vector = embedder.embed_query("What are the challenges of ML-based IDS?")  # per question
+```
+
+- **The same `Embedder` instance must be used for both chunks and queries.** Mixing two different embedding models means the vectors don't live in the same space, and similarity search becomes meaningless.
+- Vectors are **normalized to unit length** (`normalize_embeddings=True`), so a plain dot product is equivalent to cosine similarity — this is what lets a fast inner-product FAISS index (`IndexFlatIP`) behave like a cosine-similarity index.
+- The real model is loaded **lazily**, inside `Embedder.model`, not at import time or in `__init__`. This means importing `ingestion.embeddings` — and unit-testing it with a fake encoder — never requires `sentence-transformers` to actually download anything.
+
 ## Running the tests
 
 From the repo root:
@@ -113,11 +128,13 @@ uv run ruff check ingestion/ tests/
 - **Old-style arXiv IDs.** Papers from before 2007 use ids like `hep-ex/0307069v1` (a category prefix, then a slash). The downloader preserves this prefix when building the PDF URL and flattens it (`hep-ex_0307069v1.pdf`) for the local filename, so it never tries to create an unexpected subdirectory.
 - **Rate limiting.** `download()` sleeps 3 seconds after each request, per arXiv's own usage guideline. Don't remove this when scripting bulk downloads.
 - **Query syntax.** Each `--query` value is sent as an arXiv `all:` field search. To require several terms in the *same* paper rather than searching several topics, use arXiv's boolean syntax directly, e.g. `--query "all:RAG AND all:attention"`.
-- **`pdf_loader.py` has no CLI on purpose.** It's a library consumed by the chunking stage; wrapping it in its own CLI would just duplicate what a short pipeline script will do once `chunker.py` exists.
+- **`pdf_loader.py` and `embeddings.py` have no CLI on purpose.** They're libraries consumed by the ingestion pipeline; wrapping them in their own CLIs would just duplicate what a short pipeline script will do once `vector_db/` exists.
+- **`embeddings.py` was never run against the real BGE-M3 weights in this development environment** (no access to huggingface.co from the sandbox this was built in). All tests inject a fake encoder. Run a manual sanity check with the real model in your own environment before trusting it in a pipeline — e.g. `Embedder().embed_query("test")` and confirm the vector shape is `(1024,)`.
 
 ## Status
 
 - [x] PDF parsing (`pdf_loader.py`)
 - [x] arXiv downloader (`downloader.py`)
 - [x] Chunking (`chunker.py`)
-- [ ] Embeddings (`embeddings.py`) — next
+- [x] Embeddings (`embeddings.py`)
+- [ ] FAISS indexing (`vector_db/`) — next
