@@ -19,7 +19,44 @@ DEFAULT_SYSTEM_PROMPT = (
     "provided in the context below. Do not use any outside knowledge, even "
     "if you believe it is correct. If the context does not contain the "
     "answer, respond exactly: \"I don't know based on the retrieved "
-    'documents." Cite the excerpt numbers you relied on, e.g. [1], [2].'
+    'documents." '
+    "Cite a source after every factual sentence, using the excerpt's number "
+    'in brackets, e.g. "Panels reach 22% efficiency [2]." If a sentence '
+    'draws on more than one excerpt, cite all of them, e.g. "[1][3]." '
+    "Never state a fact without a citation, and never merge several "
+    "excerpts into one sentence without citing each of them. "
+    "Start your answer with a direct sentence, not with a citation number "
+    "on its own. "
+    "Address information from every excerpt that is relevant to the "
+    "question, not only the first one or two. Do not repeat the same "
+    "point twice in different words. "
+    "The excerpts may contain their own citations from the original "
+    'paper (e.g. author-year references like "[Smith, 2020]") -- ignore '
+    "these completely and never reproduce them; the only citation numbers "
+    "you may ever write are the excerpt numbers given to you here."
+)
+
+# A worked example showing the exact citation pattern expected, not just
+# describing it in prose. Small models follow a concrete demonstration
+# far more reliably than an abstract instruction -- this was added after
+# observing a 3B model merge multiple distinct sources into a single,
+# uncited paragraph despite the system prompt already asking for
+# per-sentence citations. Uses letters ([A], [B]), not numbers, so the
+# model can never confuse this example's citations with the real
+# numbered context that follows it.
+_EXAMPLE_BLOCK = (
+    "-------------------------\n"
+    "EXAMPLE (illustrates the expected format only, not real data)\n\n"
+    "CONTEXT\n\n"
+    "[A] Solar panels convert sunlight into electricity through the "
+    "photovoltaic effect.\n\n"
+    "[B] Commercial silicon panels typically reach 15% to 22% efficiency.\n\n"
+    "QUESTION\n"
+    "How efficient are solar panels?\n\n"
+    "ANSWER:\n"
+    "Solar panels convert sunlight into electricity through the "
+    "photovoltaic effect [A]. Commercial silicon panels typically reach "
+    "between 15% and 22% efficiency [B].\n\n"
 )
 
 # Some models (notably Qwen3) default to emitting a slow internal
@@ -55,6 +92,7 @@ def build_prompt(
     results: Sequence[SearchResult],
     system_prompt: str = DEFAULT_SYSTEM_PROMPT,
     disable_thinking: bool = False,
+    include_example: bool = True,
 ) -> RagPrompt:
     """Assemble the final prompt sent to the LLM.
 
@@ -70,6 +108,11 @@ def build_prompt(
             non-functional against qwen3:4b on Ollama in practice, so
             this defaults to False. Test it against your specific
             model/server before relying on it.
+        include_example: If True (default), inserts a short worked
+            example demonstrating per-sentence citation before the
+            real context. Improves citation reliability on smaller
+            models; disable only if you've confirmed your model
+            doesn't need it and want a shorter prompt.
 
     Returns:
         A RagPrompt: the prompt text, and a citation map from number to
@@ -91,8 +134,11 @@ def build_prompt(
         f"[{index}] {result.chunk.text}" for index, result in citations.items()
     )
 
+    example_block = _EXAMPLE_BLOCK if include_example else ""
+
     text = (
         f"{effective_system_prompt}\n\n"
+        f"{example_block}"
         "-------------------------\n"
         "CONTEXT\n\n"
         f"{context_block}\n\n"
@@ -100,7 +146,7 @@ def build_prompt(
         "QUESTION\n"
         f"{question}\n\n"
         "-------------------------\n"
-        "ANSWER"
+        "ANSWER:\n"
     )
 
     return RagPrompt(text=text, citations=citations)

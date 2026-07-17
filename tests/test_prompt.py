@@ -54,3 +54,42 @@ class TestBuildPrompt:
         prompt = build_prompt("a question", [best, worst])
 
         assert prompt.text.index("[1] best match") < prompt.text.index("[2] worst match")
+
+    def test_disable_thinking_appends_the_no_think_suffix(self) -> None:
+        prompt = build_prompt("a question", [_result(0, "some excerpt")], disable_thinking=True)
+        assert prompt.text.count("/no_think") == 1
+
+    def test_disable_thinking_false_by_default(self) -> None:
+        prompt = build_prompt("a question", [_result(0, "some excerpt")])
+        assert "/no_think" not in prompt.text
+
+    def test_includes_a_worked_citation_example_by_default(self) -> None:
+        prompt = build_prompt("a question", [_result(0, "some excerpt")])
+        assert "EXAMPLE" in prompt.text
+        assert "[A]" in prompt.text
+        assert "[B]" in prompt.text
+
+    def test_example_can_be_disabled(self) -> None:
+        prompt = build_prompt("a question", [_result(0, "some excerpt")], include_example=False)
+        assert "EXAMPLE" not in prompt.text
+
+    def test_example_letters_never_collide_with_real_numbered_citations(self) -> None:
+        prompt = build_prompt("a question", [_result(0, "first"), _result(1, "second")])
+        # the real context must still be numbered [1], [2], not lettered
+        assert "[1] first" in prompt.text
+        assert "[2] second" in prompt.text
+
+    def test_system_prompt_instructs_per_sentence_citation(self) -> None:
+        prompt = build_prompt("a question", [_result(0, "some excerpt")])
+        assert "every factual sentence" in prompt.text
+
+    def test_system_prompt_instructs_addressing_every_relevant_excerpt(self) -> None:
+        prompt = build_prompt("a question", [_result(0, "some excerpt")])
+        assert "not only the first one or two" in prompt.text
+
+    def test_system_prompt_instructs_ignoring_source_citations(self) -> None:
+        # Regression test: a real run leaked author-year citations from
+        # the source text itself (e.g. "[Zobel, 1998]") into the answer,
+        # mixed in with our own excerpt numbers.
+        prompt = build_prompt("a question", [_result(0, "some excerpt")])
+        assert "ignore these completely" in prompt.text
