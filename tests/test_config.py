@@ -10,11 +10,14 @@ _ENV_VARS = [
     "EMBEDDING_DIMENSION",
     "LLM_BASE_URL",
     "LLM_MODEL",
+    "LLM_TIMEOUT_SECONDS",
     "PAPERS_DIR",
     "INDEX_DIR",
     "CHUNK_SIZE",
     "CHUNK_OVERLAP",
     "TOP_K",
+    "SAVE_EVERY",
+    "DISABLE_LLM_THINKING",
 ]
 
 
@@ -30,6 +33,7 @@ class TestDefaults:
         settings = load_settings()
         assert settings.llm_base_url == "http://localhost:11434/v1"
         assert settings.llm_model == "qwen3:4b"
+        assert settings.llm_timeout_seconds == 180.0
 
     def test_defaults_use_bge_m3(self) -> None:
         settings = load_settings()
@@ -46,6 +50,8 @@ class TestDefaults:
         assert settings.chunk_size == 200
         assert settings.chunk_overlap == 40
         assert settings.top_k == 5
+        assert settings.save_every == 10
+        assert settings.disable_llm_thinking is False
 
 
 class TestEnvironmentOverrides:
@@ -73,3 +79,10 @@ class TestEnvironmentOverrides:
         settings = load_settings()
 
         assert settings.index_dir == Path("/tmp/custom-index")
+
+    def test_disable_llm_thinking_can_be_turned_on(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("DISABLE_LLM_THINKING", "true")
+
+        settings = load_settings()
+
+        assert settings.disable_llm_thinking is True

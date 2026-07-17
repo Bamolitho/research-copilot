@@ -38,12 +38,14 @@ class Settings:
     embedding_dimension: int
     llm_base_url: str
     llm_model: str
+    llm_timeout_seconds: float
     papers_dir: Path
     index_dir: Path
     chunk_size: int
     chunk_overlap: int
     top_k: int
     save_every: int
+    disable_llm_thinking: bool
 
 
 def load_settings() -> Settings:
@@ -58,10 +60,12 @@ def load_settings() -> Settings:
         embedding_dimension=int(os.getenv("EMBEDDING_DIMENSION", "1024")),
         llm_base_url=os.getenv("LLM_BASE_URL", "http://localhost:11434/v1"),
         llm_model=os.getenv("LLM_MODEL", "qwen3:4b"),
+        llm_timeout_seconds=float(os.getenv("LLM_TIMEOUT_SECONDS", "180")),
         papers_dir=Path(os.getenv("PAPERS_DIR", "data/papers")),
         index_dir=Path(os.getenv("INDEX_DIR", "data/index")),
         chunk_size=int(os.getenv("CHUNK_SIZE", "200")),
         chunk_overlap=int(os.getenv("CHUNK_OVERLAP", "40")),
         top_k=int(os.getenv("TOP_K", "5")),
         save_every=int(os.getenv("SAVE_EVERY", "10")),
+        disable_llm_thinking=os.getenv("DISABLE_LLM_THINKING", "false").lower() == "true",
     )

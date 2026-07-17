@@ -22,6 +22,17 @@ DEFAULT_SYSTEM_PROMPT = (
     'documents." Cite the excerpt numbers you relied on, e.g. [1], [2].'
 )
 
+# Some models (notably Qwen3) default to emitting a slow internal
+# reasoning trace before every answer, even for a simple grounded
+# question -- pure overhead here, since the answer must come from the
+# context, not from extended reasoning. This instruction is Qwen's
+# documented way to disable it, in theory -- in practice, it was
+# CONFIRMED NON-FUNCTIONAL against qwen3:4b on Ollama: the model
+# treated it as literal text to analyze rather than a control
+# instruction. Kept as an opt-in (default off) in case it behaves
+# differently on another build; do not assume it works untested.
+NO_THINK_SUFFIX = "\n\n/no_think"
+
 
 @dataclass(frozen=True)
 class RagPrompt:
@@ -43,6 +54,7 @@ def build_prompt(
     question: str,
     results: Sequence[SearchResult],
     system_prompt: str = DEFAULT_SYSTEM_PROMPT,
+    disable_thinking: bool = False,
 ) -> RagPrompt:
     """Assemble the final prompt sent to the LLM.
 
@@ -52,6 +64,12 @@ def build_prompt(
             vector_db.faiss_store.FaissVectorStore.search.
         system_prompt: The system instruction prepended to the prompt.
             Defaults to a strict context-only instruction.
+        disable_thinking: If True, appends an instruction intended to
+            turn off Qwen3's internal reasoning trace (see
+            NO_THINK_SUFFIX). Not guaranteed to work: confirmed
+            non-functional against qwen3:4b on Ollama in practice, so
+            this defaults to False. Test it against your specific
+            model/server before relying on it.
 
     Returns:
         A RagPrompt: the prompt text, and a citation map from number to
@@ -66,13 +84,15 @@ def build_prompt(
     if not results:
         raise ValueError("results must not be empty: nothing to ground the answer in")
 
+    effective_system_prompt = system_prompt + NO_THINK_SUFFIX if disable_thinking else system_prompt
+
     citations = dict(enumerate(results, start=1))
     context_block = "\n\n".join(
         f"[{index}] {result.chunk.text}" for index, result in citations.items()
     )
 
     text = (
-        f"{system_prompt}\n\n"
+        f"{effective_system_prompt}\n\n"
         "-------------------------\n"
         "CONTEXT\n\n"
         f"{context_block}\n\n"
