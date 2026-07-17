@@ -44,6 +44,12 @@ uv run python3 -m scripts.build_index
 uv run python3 -m scripts.ask "What are the main challenges of retrieval augmented generation?"
 ```
 
+Or, with the included `Makefile`, all three in one command (see `make help` for every target):
+
+```bash
+make pipeline
+```
+
 See [`scripts/README.md`](./scripts/README.md) for every option, including checkpointing for large corpora.
 
 ## Project layout
@@ -62,7 +68,6 @@ Each folder has its own README with full usage details, design notes, and known 
 ```bash
 uv run pytest tests/ -v
 uv run ruff check .
-uv run ruff format .
 ```
 
 Every module is covered by unit tests that run offline (no real model download or API calls required) except the underlying model calls themselves, which are mocked or dependency-injected.
