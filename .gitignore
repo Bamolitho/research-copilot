@@ -7,6 +7,8 @@ data/papers/*
 data/index/
 ROADMAP.md
 Images/architecture_roadmap.svg
+references_docs/RAG-Course-Exercises-Workbook.md
+references_docs/Retrieval-Augmented-Generation-Course.*
 
 # =================================================================
 # Byte-compiled / optimized / DLL files
