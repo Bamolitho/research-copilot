@@ -59,7 +59,7 @@ def load_settings() -> Settings:
         embedding_model=os.getenv("EMBEDDING_MODEL", "BAAI/bge-m3"),
         embedding_dimension=int(os.getenv("EMBEDDING_DIMENSION", "1024")),
         llm_base_url=os.getenv("LLM_BASE_URL", "http://localhost:11434/v1"),
-        llm_model=os.getenv("LLM_MODEL", "qwen3:4b"),
+        llm_model=os.getenv("LLM_MODEL", "llama3.2:3b"),
         llm_timeout_seconds=float(os.getenv("LLM_TIMEOUT_SECONDS", "180")),
         papers_dir=Path(os.getenv("PAPERS_DIR", "data/papers")),
         index_dir=Path(os.getenv("INDEX_DIR", "data/index")),

@@ -33,7 +33,7 @@ cp .env.example .env
 Pull a local model with [Ollama](https://ollama.com) (no GPU required):
 
 ```bash
-ollama pull qwen3:4b
+ollama pull llama3.2:3b
 ```
 
 Download some papers, build the index, then ask a question:
