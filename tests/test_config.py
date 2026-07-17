@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import pytest
+
 from config import load_settings
 
 _ENV_VARS = [
@@ -32,7 +33,7 @@ class TestDefaults:
     def test_defaults_target_a_local_ollama_server(self) -> None:
         settings = load_settings()
         assert settings.llm_base_url == "http://localhost:11434/v1"
-        assert settings.llm_model == "qwen3:4b"
+        assert settings.llm_model == "llama3.2:3b"
         assert settings.llm_timeout_seconds == 180.0
 
     def test_defaults_use_bge_m3(self) -> None:
