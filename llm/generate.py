@@ -17,7 +17,19 @@ import requests
 from llm.prompt import RagPrompt
 from vector_db.faiss_store import SearchResult
 
-DEFAULT_TIMEOUT_SECONDS = 60
+DEFAULT_TIMEOUT_SECONDS = 180.0
+
+# Some models (observed: qwen3:4b on Ollama) emit their internal
+# reasoning trace inline in the response content regardless of API
+# flags meant to disable it -- both a "/no_think" prompt instruction
+# and Ollama's "think": false parameter were confirmed ignored. The
+# reasoning is reliably terminated by a literal "</think>" tag even
+# when no opening "<think>" tag is present in the returned content
+# (it's implicit in the chat template). Stripping up to and including
+# that tag keeps GeneratedAnswer.text as just the actual answer.
+# This does NOT reduce latency -- the model still generates every
+# reasoning token before this ever runs, it only cleans the output.
+_THINK_END_TAG = "</think>"
 
 
 @dataclass(frozen=True)
@@ -57,6 +69,10 @@ class Generator:
             class needing to know which kind it is.
         session: Optional requests.Session to reuse. Inject a mock
             session in tests to avoid needing a real server running.
+        timeout: Seconds to wait for a response before giving up.
+            Defaults to 180s -- CPU-only inference (e.g. Ollama without
+            a GPU) can genuinely take over a minute for a full answer;
+            60s was observed to be too aggressive in practice.
     """
 
     def __init__(
@@ -65,11 +81,13 @@ class Generator:
         model: str,
         auth_header_provider: Callable[[], str] | None = None,
         session: requests.Session | None = None,
+        timeout: float = DEFAULT_TIMEOUT_SECONDS,
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.model = model
         self._auth_header_provider = auth_header_provider
         self._session = session or requests.Session()
+        self.timeout = timeout
 
     def generate(self, prompt: RagPrompt, temperature: float = 0.0) -> GeneratedAnswer:
         """Send a RAG prompt to the LLM and return its answer.
@@ -98,8 +116,21 @@ class Generator:
                 "temperature": temperature,
             },
             headers=headers,
-            timeout=DEFAULT_TIMEOUT_SECONDS,
+            timeout=self.timeout,
         )
         response.raise_for_status()
         answer_text = response.json()["choices"][0]["message"]["content"]
+        answer_text = self._strip_thinking_block(answer_text)
         return GeneratedAnswer(text=answer_text, citations=prompt.citations)
+
+    @staticmethod
+    def _strip_thinking_block(text: str) -> str:
+        """Remove a leading reasoning trace, if the model emitted one.
+
+        Looks for a literal "</think>" tag and keeps only what follows
+        it. Text with no such tag (most models, most of the time) is
+        returned unchanged.
+        """
+        if _THINK_END_TAG in text:
+            return text.split(_THINK_END_TAG, 1)[1].strip()
+        return text
