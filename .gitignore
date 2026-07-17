@@ -5,6 +5,8 @@ data/papers/*
 .env.*
 !.env.example
 data/index/
+ROADMAP.md
+Images/architecture_roadmap.svg
 
 # =================================================================
 # Byte-compiled / optimized / DLL files

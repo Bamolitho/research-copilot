@@ -1,108 +1,76 @@
 # Research Copilot
 
-A retrieval augmented assistant that answers technical questions using a corpus of scientific papers, and backs every answer with real citations you can check.
+A retrieval augmented research assistant that answers questions from a corpus of scientific papers, and backs every answer with real citations you can check.
 
-## Why this project exists
-
-Most question answering systems trained on general web text will give you a confident sounding answer even when they don't actually know. For scientific work that's a real problem: you need to know which paper a claim comes from, not just whether the sentence sounds plausible.
-
-Research Copilot is built around a simple rule: never answer from memory. Every response is grounded in a fixed collection of papers, and every claim points back to a specific source, an excerpt and a similarity score, so you can verify it yourself instead of trusting the model blindly.
-
-Example query:
-
-> What are the main challenges of machine learning based intrusion detection systems for software defined vehicles?
-
-The system responds with a short synthesis in natural language, a numbered list of references, the exact excerpt supporting each reference, and a similarity score for each retrieved chunk.
+Ask a question, get a synthesized answer, and see exactly which paper, page, and excerpt it came from — no hallucinated references, no black box.
 
 ## How it works
 
 ![Architecture diagram of Research Copilot](./Images/architecture.svg)
 
-The pipeline is organized in three phases.
-
-**Ingestion** turns raw PDFs into searchable vectors. Text is extracted with PyMuPDF, split into chunks sized for retrieval, then encoded with BGE-M3.
-
-**Retrieval** finds the passages relevant to a question. Chunks live in a FAISS index, and a query embedding is compared against it to pull back the closest matching passages.
-
-**Generation** turns retrieved passages into an answer. The LLM only sees the retrieved excerpts plus the question, and is instructed to answer strictly from that context and to cite where each part of the answer comes from.
-
-## Example output
-
-```
-Q: What are the main challenges of AI based IDS for CAN networks?
-
-According to the retrieved literature, the main challenges are:
-
-- False positives in real driving conditions
-- Poor quality or unbalanced datasets
-- Concept drift as attack patterns evolve
-- Limited compute resources on embedded ECUs
-
-References
-[1] Paper A, similarity 0.87
-[2] Paper B, similarity 0.81
-[3] Paper C, similarity 0.79
-```
-
-## Scope of the first version
-
-The first version stays intentionally narrow, so we can ship something that works end to end before adding complexity on top.
-
-Included in v1:
-
-- Ingest a fixed set of PDF papers, a few hundred to start with
-- Extract, chunk, embed and index them
-- Answer a single question with a synthesized response, numbered references, source excerpts and similarity scores
-- Run locally through Docker for a reproducible environment
-
-Not in v1, planned for later:
-
-- Conversation memory
-- Hybrid search, combining BM25 with vector search
-- Reranking of retrieved chunks
-- Automatic query reformulation
-- Bibliography and document export
-- Kubernetes deployment and a full monitoring stack
-
-## Roadmap
-
-| Version | What it adds |
-|---|---|
-| v1 | Core RAG pipeline with citations, this version |
-| v2 | Click a reference to see the original paragraph, page number and source PDF |
-| v3 | Conversation memory across turns |
-| v4 | Hybrid search, BM25 combined with vector search |
-| v5 | Reranking of retrieved chunks, BGE reranker or Cohere rerank |
-| v6 | Automatic multi query reformulation |
-| v7 | Bibliography generation, BibTeX, APA, IEEE, ACM |
-| v8 | Export to PDF, Markdown or LaTeX |
-| Later | Kubernetes deployment and monitoring with Prometheus and Grafana |
-
-## Success criteria for v1
-
-- At least 2 to 3 correctly attributed citations for over 80% of a hand written test set of 10 to 20 questions
-- No hallucinated references, every citation must map to a chunk that was actually retrieved
-- Retrieval latency under 2 to 3 seconds for a corpus of a few hundred papers
+Indexing runs once (or whenever new papers are added): download from arXiv, extract text, split it into overlapping chunks, embed each chunk with BGE-M3, and store the vectors in a FAISS index. Answering a question is much cheaper: only the question itself is embedded, the index is searched for the closest chunks, and an LLM generates an answer strictly from that retrieved context.
 
 ## Tech stack
 
-| Layer | Choice for v1 | Status |
+| Layer | Technology | Why |
 |---|---|---|
-| PDF extraction | PyMuPDF | Candidate, pdfplumber as backup for tricky layouts |
-| Embeddings | BGE-M3 | Decided |
-| Vector store | FAISS | Decided |
-| LLM | Llama 3, Mistral, Qwen or GPT | Still open |
-| Orchestration | LangChain or LlamaIndex | Still open |
-| API | FastAPI | Candidate |
-| Frontend | Streamlit | Candidate |
-| Containerization | Docker | Decided |
+| Paper acquisition | arXiv API | Free, no auth, direct PDF links and metadata |
+| PDF parsing | PyMuPDF | Fast, reliable text extraction, page-aware |
+| Embeddings | BGE-M3 (self-hosted) | Open weights, strong multilingual retrieval |
+| Vector index | FAISS | Full control, runs entirely on local/owned infrastructure |
+| Generation | Any OpenAI-compatible endpoint (Ollama locally, vLLM in production) | No vendor lock-in, works identically on a laptop or a GPU server |
+| Tooling | uv, ruff, pytest | Fast dependency management, linting, and testing |
 
-BGE-M3 was picked over the classic bge-large-en-v1.5 or e5-large-v2 pair because it is MIT licensed, self-hostable on CPU for a corpus this size, and supports dense, sparse and multi-vector retrieval in a single model. That last point matters because hybrid search, BM25 combined with vector search, is already planned for v4, so starting on a model built for it avoids a migration later. FAISS was picked for its simplicity and maturity for a single-machine MVP, with ChromaDB and Qdrant staying as options once the project needs multi-user access or managed hosting.
+## Getting started
+
+```bash
+git clone https://github.com/Bamolitho/research-copilot.git
+cd research-copilot
+uv sync
+cp .env.example .env
+```
+
+Pull a local model with [Ollama](https://ollama.com) (no GPU required):
+
+```bash
+ollama pull qwen3:4b
+```
+
+Download some papers, build the index, then ask a question:
+
+```bash
+uv run python3 -m ingestion.downloader --query "retrieval augmented generation" --max-results 20
+uv run python3 -m scripts.build_index
+uv run python3 -m scripts.ask "What are the main challenges of retrieval augmented generation?"
+```
+
+See [`scripts/README.md`](./scripts/README.md) for every option, including checkpointing for large corpora.
+
+## Project layout
+
+| Folder | Responsibility |
+|---|---|
+| [`ingestion/`](./ingestion/README.md) | Downloading papers, PDF parsing, chunking, embeddings |
+| [`vector_db/`](./vector_db/README.md) | FAISS storage and similarity search |
+| [`llm/`](./llm/README.md) | Prompt construction and answer generation |
+| [`scripts/`](./scripts/README.md) | End-to-end CLI pipeline (`build_index`, `ask`) |
+
+Each folder has its own README with full usage details, design notes, and known limitations — start there for anything beyond this overview.
+
+## Testing
+
+```bash
+uv run pytest tests/ -v
+uv run ruff check .
+uv run ruff format .
+```
+
+Every module is covered by unit tests that run offline (no real model download or API calls required) except the underlying model calls themselves, which are mocked or dependency-injected.
 
 ## Status
 
-This repository is at the design stage. The scope and architecture above are set for v1, and implementation starts with the ingestion module.
+The core pipeline works end-to-end from the command line: download, index, and ask, all covered by tests. A web API and a browser UI are not built yet — for now, this is a CLI tool.
 
 ## License
 
-MIT
+MIT, see [LICENSE](./LICENSE).

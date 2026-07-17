@@ -1,63 +1,103 @@
-<svg width="1200" height="500" viewBox="0 0 1200 500" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe Print','Kalam','Comic Sans MS',cursive">
+<svg width="1200" height="380" viewBox="0 0 1200 380" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe Print','Kalam','Comic Sans MS',cursive">
   <defs>
-    <filter id="roughen" x="-20%" y="-200%" width="140%" height="500%">
-      <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="7" result="noise"/>
-      <feDisplacementMap in="SourceGraphic" in2="noise" scale="3.2"/>
-    </filter>
     <marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M1,1 L9,5 L1,9 Z" fill="#495057"/>
     </marker>
   </defs>
 
-  <rect x="0" y="0" width="1200" height="500" fill="#ffffff"/>
+  <rect x="0" y="0" width="1200" height="380" fill="#ffffff"/>
 
-  <text x="600" y="42" text-anchor="middle" font-size="27" fill="#1e1e1e">Research Copilot, architecture</text>
-  <text x="600" y="68" text-anchor="middle" font-size="15" fill="#757575" font-family="'Segoe UI', sans-serif">From raw PDFs to grounded answers</text>
+  <text x="600" y="34" text-anchor="middle" font-size="24" fill="#1e1e1e">Research Copilot, architecture</text>
+  <text x="600" y="56" text-anchor="middle" font-size="13" fill="#757575" font-family="'Segoe UI', sans-serif">Build the index once, then answer any question against it</text>
 
-  <!-- Zone 1: Ingestion -->
-  <rect x="40" y="100" width="340" height="340" rx="22" fill="#c3fae8" fill-opacity="0.35" stroke="#0f766e" stroke-width="2" filter="url(#roughen)"/>
-  <text x="60" y="134" font-size="21" fill="#0f766e">Ingestion</text>
+  <!-- ROW 1: INDEXING -->
+  <text x="40" y="84" font-size="13" fill="#0f766e" font-family="'Segoe UI', sans-serif" font-weight="bold">INDEXING — run once per new paper</text>
 
-  <rect x="60" y="170" width="300" height="50" rx="12" fill="#96f2d7" stroke="#0f766e" stroke-width="2" filter="url(#roughen)"/>
-  <text x="210" y="200" text-anchor="middle" font-size="15" fill="#0f766e">PDF corpus, raw papers</text>
-  <path d="M210,220 L210,238" stroke="#495057" stroke-width="2.5" fill="none" marker-end="url(#arrowhead)"/>
+  <g>
+    <rect x="40" y="95" width="170" height="68" rx="10" fill="#e9ecef" stroke="#495057" stroke-width="1.5"/>
+    <text x="125" y="122" text-anchor="middle" font-size="14" fill="#343a40">arXiv corpus</text>
+    <text x="125" y="142" text-anchor="middle" font-size="10.5" fill="#495057" font-family="Consolas, monospace">PDF papers</text>
+  </g>
+  <path d="M210,129 L228,129" stroke="#495057" stroke-width="2" marker-end="url(#arrowhead)"/>
 
-  <rect x="60" y="238" width="300" height="50" rx="12" fill="#96f2d7" stroke="#0f766e" stroke-width="2" filter="url(#roughen)"/>
-  <text x="210" y="268" text-anchor="middle" font-size="15" fill="#0f766e">Text extraction, PyMuPDF</text>
-  <path d="M210,288 L210,306" stroke="#495057" stroke-width="2.5" fill="none" marker-end="url(#arrowhead)"/>
+  <g>
+    <rect x="230" y="95" width="170" height="68" rx="10" fill="#96f2d7" stroke="#0f766e" stroke-width="1.5"/>
+    <text x="315" y="122" text-anchor="middle" font-size="14" fill="#0f766e">Download</text>
+    <text x="315" y="142" text-anchor="middle" font-size="10.5" fill="#0f766e" font-family="Consolas, monospace">downloader.py</text>
+  </g>
+  <path d="M400,129 L418,129" stroke="#495057" stroke-width="2" marker-end="url(#arrowhead)"/>
 
-  <rect x="60" y="306" width="300" height="50" rx="12" fill="#96f2d7" stroke="#0f766e" stroke-width="2" filter="url(#roughen)"/>
-  <text x="210" y="336" text-anchor="middle" font-size="15" fill="#0f766e">Chunking into passages</text>
-  <path d="M210,356 L210,374" stroke="#495057" stroke-width="2.5" fill="none" marker-end="url(#arrowhead)"/>
+  <g>
+    <rect x="420" y="95" width="170" height="68" rx="10" fill="#96f2d7" stroke="#0f766e" stroke-width="1.5"/>
+    <text x="505" y="122" text-anchor="middle" font-size="14" fill="#0f766e">Parse</text>
+    <text x="505" y="142" text-anchor="middle" font-size="10.5" fill="#0f766e" font-family="Consolas, monospace">pdf_loader.py</text>
+  </g>
+  <path d="M590,129 L608,129" stroke="#495057" stroke-width="2" marker-end="url(#arrowhead)"/>
 
-  <rect x="60" y="374" width="300" height="50" rx="12" fill="#96f2d7" stroke="#0f766e" stroke-width="2" filter="url(#roughen)"/>
-  <text x="210" y="404" text-anchor="middle" font-size="15" fill="#0f766e">Embeddings, BGE-M3</text>
+  <g>
+    <rect x="610" y="95" width="170" height="68" rx="10" fill="#96f2d7" stroke="#0f766e" stroke-width="1.5"/>
+    <text x="695" y="122" text-anchor="middle" font-size="14" fill="#0f766e">Chunk</text>
+    <text x="695" y="142" text-anchor="middle" font-size="10.5" fill="#0f766e" font-family="Consolas, monospace">chunker.py</text>
+  </g>
+  <path d="M780,129 L798,129" stroke="#495057" stroke-width="2" marker-end="url(#arrowhead)"/>
 
-  <!-- Zone 2: Retrieval -->
-  <rect x="430" y="100" width="340" height="340" rx="22" fill="#e5dbff" fill-opacity="0.35" stroke="#6d28d9" stroke-width="2" filter="url(#roughen)"/>
-  <text x="450" y="134" font-size="21" fill="#5b21b6">Retrieval</text>
+  <g>
+    <rect x="800" y="95" width="170" height="68" rx="10" fill="#d0bfff" stroke="#6d28d9" stroke-width="1.5"/>
+    <text x="885" y="122" text-anchor="middle" font-size="14" fill="#5b21b6">Embed</text>
+    <text x="885" y="142" text-anchor="middle" font-size="10.5" fill="#5b21b6" font-family="Consolas, monospace">BGE-M3</text>
+  </g>
+  <path d="M970,129 L988,129" stroke="#495057" stroke-width="2" marker-end="url(#arrowhead)"/>
 
-  <rect x="450" y="250" width="300" height="50" rx="12" fill="#d0bfff" stroke="#6d28d9" stroke-width="2" filter="url(#roughen)"/>
-  <text x="600" y="280" text-anchor="middle" font-size="15" fill="#5b21b6">Vector store, FAISS</text>
-  <path d="M600,300 L600,318" stroke="#495057" stroke-width="2.5" fill="none" marker-end="url(#arrowhead)"/>
+  <g>
+    <rect x="990" y="95" width="170" height="68" rx="10" fill="#d0bfff" stroke="#6d28d9" stroke-width="1.5"/>
+    <text x="1075" y="122" text-anchor="middle" font-size="14" fill="#5b21b6">FAISS index</text>
+    <text x="1075" y="142" text-anchor="middle" font-size="10.5" fill="#5b21b6" font-family="Consolas, monospace">saved to disk</text>
+  </g>
 
-  <rect x="450" y="318" width="300" height="50" rx="12" fill="#d0bfff" stroke="#6d28d9" stroke-width="2" filter="url(#roughen)"/>
-  <text x="600" y="348" text-anchor="middle" font-size="15" fill="#5b21b6">Similarity search, top-k</text>
+  <!-- ROW 2: QUERY -->
+  <text x="40" y="200" font-size="13" fill="#9a3412" font-family="'Segoe UI', sans-serif" font-weight="bold">QUERY — per user question</text>
 
-  <!-- Zone 3: Generation -->
-  <rect x="820" y="100" width="340" height="340" rx="22" fill="#ffe8cc" fill-opacity="0.35" stroke="#c2410c" stroke-width="2" filter="url(#roughen)"/>
-  <text x="840" y="134" font-size="21" fill="#9a3412">Generation</text>
+  <g>
+    <rect x="40" y="211" width="170" height="68" rx="10" fill="#e9ecef" stroke="#495057" stroke-width="1.5"/>
+    <text x="125" y="238" text-anchor="middle" font-size="14" fill="#343a40">Question</text>
+    <text x="125" y="258" text-anchor="middle" font-size="10.5" fill="#495057" font-family="Consolas, monospace">natural language</text>
+  </g>
+  <path d="M210,245 L228,245" stroke="#495057" stroke-width="2" marker-end="url(#arrowhead)"/>
 
-  <rect x="840" y="250" width="300" height="50" rx="12" fill="#ffd8a8" stroke="#c2410c" stroke-width="2" filter="url(#roughen)"/>
-  <text x="990" y="280" text-anchor="middle" font-size="15" fill="#9a3412">LLM synthesis, grounded prompt</text>
-  <path d="M990,300 L990,318" stroke="#495057" stroke-width="2.5" fill="none" marker-end="url(#arrowhead)"/>
+  <g>
+    <rect x="230" y="211" width="170" height="68" rx="10" fill="#d0bfff" stroke="#6d28d9" stroke-width="1.5"/>
+    <text x="315" y="238" text-anchor="middle" font-size="14" fill="#5b21b6">Embed</text>
+    <text x="315" y="258" text-anchor="middle" font-size="10.5" fill="#5b21b6" font-family="Consolas, monospace">BGE-M3</text>
+  </g>
+  <path d="M400,245 L418,245" stroke="#495057" stroke-width="2" marker-end="url(#arrowhead)"/>
 
-  <rect x="840" y="318" width="300" height="50" rx="12" fill="#ffd8a8" stroke="#c2410c" stroke-width="2" filter="url(#roughen)"/>
-  <text x="990" y="348" text-anchor="middle" font-size="15" fill="#9a3412">Answer with citations</text>
+  <g>
+    <rect x="420" y="211" width="170" height="68" rx="10" fill="#d0bfff" stroke="#6d28d9" stroke-width="1.5"/>
+    <text x="505" y="238" text-anchor="middle" font-size="14" fill="#5b21b6">FAISS search</text>
+    <text x="505" y="258" text-anchor="middle" font-size="10.5" fill="#5b21b6" font-family="Consolas, monospace">faiss_store.py</text>
+  </g>
+  <path d="M590,245 L608,245" stroke="#495057" stroke-width="2" marker-end="url(#arrowhead)"/>
 
-  <!-- connecting arrows between zones -->
-  <path d="M380,270 L428,270" stroke="#495057" stroke-width="2.5" fill="none" marker-end="url(#arrowhead)"/>
-  <path d="M770,270 L818,270" stroke="#495057" stroke-width="2.5" fill="none" marker-end="url(#arrowhead)"/>
+  <g>
+    <rect x="610" y="211" width="170" height="68" rx="10" fill="#ffd8a8" stroke="#c2410c" stroke-width="1.5"/>
+    <text x="695" y="238" text-anchor="middle" font-size="14" fill="#9a3412">Prompt</text>
+    <text x="695" y="258" text-anchor="middle" font-size="10.5" fill="#9a3412" font-family="Consolas, monospace">prompt.py</text>
+  </g>
+  <path d="M780,245 L798,245" stroke="#495057" stroke-width="2" marker-end="url(#arrowhead)"/>
 
-  <text x="600" y="474" text-anchor="middle" font-size="14" fill="#868e96" font-family="'Segoe UI', sans-serif">Every answer is grounded in the retrieved passages, and cites them by number, excerpt and similarity score</text>
+  <g>
+    <rect x="800" y="211" width="170" height="68" rx="10" fill="#ffd8a8" stroke="#c2410c" stroke-width="1.5"/>
+    <text x="885" y="238" text-anchor="middle" font-size="14" fill="#9a3412">LLM</text>
+    <text x="885" y="258" text-anchor="middle" font-size="10.5" fill="#9a3412" font-family="Consolas, monospace">Ollama / vLLM</text>
+  </g>
+  <path d="M970,245 L988,245" stroke="#495057" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+  <g>
+    <rect x="990" y="211" width="170" height="68" rx="10" fill="#e9ecef" stroke="#495057" stroke-width="1.5"/>
+    <text x="1075" y="238" text-anchor="middle" font-size="14" fill="#343a40">Cited answer</text>
+    <text x="1075" y="258" text-anchor="middle" font-size="10.5" fill="#495057" font-family="Consolas, monospace">generate.py</text>
+  </g>
+
+  <text x="600" y="315" text-anchor="middle" font-size="12.5" fill="#868e96" font-family="'Segoe UI', sans-serif">The FAISS index built during indexing is loaded once and searched per question --</text>
+  <text x="600" y="333" text-anchor="middle" font-size="12.5" fill="#868e96" font-family="'Segoe UI', sans-serif">no document is ever re-embedded at query time, only the question is.</text>
 </svg>
