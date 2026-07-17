@@ -9,7 +9,9 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
+import requests
 
+from ingestion import downloader as downloader_module
 from ingestion.downloader import ArxivDownloader, ArxivPaper
 
 SAMPLE_FEED = """<?xml version="1.0" encoding="UTF-8"?>
@@ -103,6 +105,83 @@ class TestSearch:
 
         sent_params = mock_session.get.call_args.kwargs["params"]
         assert sent_params["search_query"] == "all:RAG AND all:attention"
+
+
+class TestUserAgent:
+    def test_a_descriptive_user_agent_is_set_by_default(self, tmp_path: Path) -> None:
+        downloader = ArxivDownloader(download_dir=tmp_path)
+        assert "research-copilot" in downloader._session.headers["User-Agent"]
+
+    def test_an_existing_user_agent_on_an_injected_session_is_not_overwritten(
+        self, tmp_path: Path
+    ) -> None:
+        session = requests.Session()
+        session.headers["User-Agent"] = "custom-agent/1.0"
+
+        downloader = ArxivDownloader(download_dir=tmp_path, session=session)
+
+        assert downloader._session.headers["User-Agent"] == "custom-agent/1.0"
+
+
+class TestRateLimitRetry:
+    def test_retries_on_429_then_succeeds(
+        self, downloader: ArxivDownloader, mock_session: MagicMock, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr("ingestion.downloader.time.sleep", lambda _seconds: None)
+        rate_limited = MagicMock(status_code=429)
+        ok = MagicMock(status_code=200, text=SAMPLE_FEED)
+        ok.raise_for_status.return_value = None
+        mock_session.get.side_effect = [rate_limited, ok]
+
+        papers = downloader.search("anything")
+
+        assert len(papers) == 1
+        assert mock_session.get.call_count == 2
+
+    def test_raises_after_exhausting_all_retries(
+        self, downloader: ArxivDownloader, mock_session: MagicMock, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr("ingestion.downloader.time.sleep", lambda _seconds: None)
+        rate_limited = MagicMock(status_code=429)
+        rate_limited.raise_for_status.side_effect = requests.HTTPError("429 Too Many Requests")
+        mock_session.get.return_value = rate_limited
+
+        with pytest.raises(requests.HTTPError):
+            downloader.search("anything")
+
+        assert mock_session.get.call_count == downloader_module.MAX_RETRIES
+
+    def test_a_non_429_error_is_not_retried(
+        self, downloader: ArxivDownloader, mock_session: MagicMock, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr("ingestion.downloader.time.sleep", lambda _seconds: None)
+        server_error = MagicMock(status_code=500)
+        server_error.raise_for_status.side_effect = requests.HTTPError("500 Server Error")
+        mock_session.get.return_value = server_error
+
+        with pytest.raises(requests.HTTPError):
+            downloader.search("anything")
+
+        assert mock_session.get.call_count == 1  # no retry for a non-429 error
+
+    def test_backoff_doubles_between_attempts(
+        self, downloader: ArxivDownloader, mock_session: MagicMock, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        sleep_calls = []
+        monkeypatch.setattr(
+            "ingestion.downloader.time.sleep", lambda seconds: sleep_calls.append(seconds)
+        )
+        rate_limited = MagicMock(status_code=429)
+        ok = MagicMock(status_code=200, text=SAMPLE_FEED)
+        ok.raise_for_status.return_value = None
+        mock_session.get.side_effect = [rate_limited, rate_limited, ok]
+
+        downloader.search("anything")
+
+        assert sleep_calls == [
+            downloader_module.INITIAL_BACKOFF_SECONDS,
+            downloader_module.INITIAL_BACKOFF_SECONDS * 2,
+        ]
 
 
 class TestDownload:

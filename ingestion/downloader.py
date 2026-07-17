@@ -9,6 +9,7 @@ small and every HTTP call easy to audit, in line with the project's
 from __future__ import annotations
 
 import argparse
+import logging
 import re
 import time
 import xml.etree.ElementTree as ET
@@ -16,6 +17,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import requests
+
+logger = logging.getLogger(__name__)
 
 ARXIV_API_URL = "http://export.arxiv.org/api/query"
 _ATOM_NS = {"atom": "http://www.w3.org/2005/Atom"}
@@ -26,6 +29,16 @@ _FIELD_PREFIX_PATTERN = re.compile(r"\b(all|ti|abs|cat|au|co|jr|rn|id):", re.IGN
 
 # arXiv's own usage guideline asks for at most one request every 3 seconds.
 REQUEST_DELAY_SECONDS = 3.0
+
+# arXiv can return 429 even when this client respects its own request
+# delay, particularly from shared/datacenter IP ranges (cloud VMs see
+# traffic from many unrelated tenants). Retry with exponential backoff
+# rather than failing the whole run on a transient rate limit.
+MAX_RETRIES = 4
+INITIAL_BACKOFF_SECONDS = 5.0
+
+# arXiv's API etiquette explicitly asks clients to identify themselves.
+USER_AGENT = "research-copilot/0.1 (personal research assistant project)"
 
 
 @dataclass(frozen=True)
@@ -64,7 +77,12 @@ class ArxivDownloader:
     ) -> None:
         self.download_dir = Path(download_dir)
         self.download_dir.mkdir(parents=True, exist_ok=True)
-        self._session = session or requests.Session()
+        if session is None:
+            self._session = requests.Session()
+            self._session.headers["User-Agent"] = USER_AGENT
+        else:
+            self._session = session
+            self._session.headers.setdefault("User-Agent", USER_AGENT)
 
     def search(self, query: str, max_results: int = 20) -> list[ArxivPaper]:
         """Search arXiv and return paper metadata, most relevant first.
@@ -89,8 +107,7 @@ class ArxivDownloader:
             "start": 0,
             "max_results": max_results,
         }
-        response = self._session.get(ARXIV_API_URL, params=params, timeout=30)
-        response.raise_for_status()
+        response = self._get_with_retry(ARXIV_API_URL, params=params, timeout=30)
         return self._parse_feed(response.text)
 
     def download(self, paper: ArxivPaper, overwrite: bool = False) -> Path:
@@ -111,11 +128,48 @@ class ArxivDownloader:
         if destination.exists() and not overwrite:
             return destination
 
-        response = self._session.get(paper.pdf_url, timeout=60)
-        response.raise_for_status()
+        response = self._get_with_retry(paper.pdf_url, timeout=60)
         destination.write_bytes(response.content)
         time.sleep(REQUEST_DELAY_SECONDS)
         return destination
+
+    def _get_with_retry(
+        self, url: str, *, timeout: float, params: dict | None = None
+    ) -> requests.Response:
+        """GET a URL, retrying with exponential backoff on 429 (rate limit).
+
+        Any other error status raises immediately -- only a rate limit
+        is worth waiting out.
+
+        Args:
+            url: URL to request.
+            timeout: Request timeout in seconds.
+            params: Optional query parameters.
+
+        Returns:
+            The successful response.
+
+        Raises:
+            requests.HTTPError: If the final attempt still fails, or if
+                a non-429 error status is returned at any attempt.
+        """
+        backoff = INITIAL_BACKOFF_SECONDS
+        for attempt in range(1, MAX_RETRIES + 1):
+            response = self._session.get(url, params=params, timeout=timeout)
+            if response.status_code == 429 and attempt < MAX_RETRIES:
+                logger.warning(
+                    "Rate limited (429) by %s, retrying in %.0fs (attempt %d/%d)",
+                    url,
+                    backoff,
+                    attempt,
+                    MAX_RETRIES,
+                )
+                time.sleep(backoff)
+                backoff *= 2
+                continue
+            response.raise_for_status()
+            return response
+        raise AssertionError("unreachable: loop always returns or raises")
 
     @staticmethod
     def _safe_filename(arxiv_id: str) -> str:
@@ -215,7 +269,9 @@ def _run_cli() -> None:
     # matching two topics (e.g. "RAG" and "attention mechanism") must
     # only be downloaded once.
     papers_by_id: dict[str, ArxivPaper] = {}
-    for query in args.queries:
+    for i, query in enumerate(args.queries):
+        if i > 0:
+            time.sleep(REQUEST_DELAY_SECONDS)  # be polite between topics too
         found = downloader.search(query, max_results=args.max_results)
         print(f"Found {len(found)} paper(s) for topic: {query!r}")
         for paper in found:
