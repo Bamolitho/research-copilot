@@ -137,4 +137,4 @@ uv run ruff check ingestion/ tests/
 - [x] arXiv downloader (`downloader.py`)
 - [x] Chunking (`chunker.py`)
 - [x] Embeddings (`embeddings.py`)
-- [ ] FAISS indexing (`vector_db/`) — next
+- [ ] FAISS indexing → moved to [`vector_db/`](../vector_db/README.md)
