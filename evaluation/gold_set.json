@@ -1,0 +1,202 @@
+[
+  {
+    "question": "What is a low-utility facet in Complex Answer Retrieval, and how does it differ from a high-utility facet?",
+    "relevant": [
+      {
+        "source_path": "data/papers/1811.08772v1.pdf",
+        "chunk_id": 5
+      },
+      {
+        "source_path": "data/papers/1811.08772v1.pdf",
+        "chunk_id": 6
+      }
+    ],
+    "notes": "Definition split across a chunk boundary: the cheese/curdling example starts in chunk 5 and the explicit high- vs low-utility definition lands in chunk 6."
+  },
+  {
+    "question": "What two estimators of facet utility does the paper propose to identify low-utility headings?",
+    "relevant": [
+      {
+        "source_path": "data/papers/1811.08772v1.pdf",
+        "chunk_id": 0
+      },
+      {
+        "source_path": "data/papers/1811.08772v1.pdf",
+        "chunk_id": 20
+      }
+    ],
+    "notes": "Named as 'heading position (HP) and heading frequency (HF)' explicitly in chunk 20; described more generally in the abstract, chunk 0."
+  },
+  {
+    "question": "Which TREC dataset is used to evaluate the proposed CAR approach, and what four official metrics are reported?",
+    "relevant": [
+      {
+        "source_path": "data/papers/1811.08772v1.pdf",
+        "chunk_id": 34
+      },
+      {
+        "source_path": "data/papers/1811.08772v1.pdf",
+        "chunk_id": 38
+      }
+    ],
+    "notes": "Dataset (TREC CAR v1.5) in chunk 34; the four metrics (MAP, R-Prec, MRR, nDCG) in chunk 38."
+  },
+  {
+    "question": "Which neural ranking model is modified in this paper, and by how much does the proposed approach improve over the next best competing approach?",
+    "relevant": [
+      {
+        "source_path": "data/papers/1811.08772v1.pdf",
+        "chunk_id": 7
+      },
+      {
+        "source_path": "data/papers/1811.08772v1.pdf",
+        "chunk_id": 32
+      }
+    ],
+    "notes": "'up to 26% improvement over the next best approach' is in chunk 7; PACRR is named as the modified model in chunk 32."
+  },
+  {
+    "question": "Why doesn't the instant motion tracking system require calibration or initialization, unlike standard SLAM pipelines?",
+    "relevant": [
+      {
+        "source_path": "data/papers/1907.06796v1.pdf",
+        "chunk_id": 2
+      }
+    ]
+  },
+  {
+    "question": "How does the instant motion tracking system combine visual and sensor information to achieve 6DoF pose estimation?",
+    "relevant": [
+      {
+        "source_path": "data/papers/1907.06796v1.pdf",
+        "chunk_id": 10
+      },
+      {
+        "source_path": "data/papers/1907.06796v1.pdf",
+        "chunk_id": 11
+      }
+    ],
+    "notes": "Translation from the image-based region tracker (chunk 10), rotation from the built-in gyroscope (chunk 11)."
+  },
+  {
+    "question": "What real-time performance does the instant motion tracking system achieve, and across how many devices?",
+    "relevant": [
+      {
+        "source_path": "data/papers/1907.06796v1.pdf",
+        "chunk_id": 12
+      }
+    ],
+    "notes": "27.5 FPS across 415+ distinct devices."
+  },
+  {
+    "question": "What problem does a pure homography-based approach have for planar target tracking, and what alternative does the paper propose?",
+    "relevant": [
+      {
+        "source_path": "data/papers/1907.06796v1.pdf",
+        "chunk_id": 9
+      }
+    ],
+    "notes": "Homography's 8 degrees of freedom vs. the target's real 6 DoF causes skew artifacts; the paper proposes a perspective transform instead."
+  },
+  {
+    "question": "According to the neural ranking models survey, what are the main challenges a neural ranking model must address?",
+    "relevant": [
+      {
+        "source_path": "data/papers/2102.11903v2.pdf",
+        "chunk_id": 3
+      },
+      {
+        "source_path": "data/papers/2102.11903v2.pdf",
+        "chunk_id": 4
+      }
+    ],
+    "notes": "Query/document length mismatch and vocabulary mismatch in chunk 3; context-dependent semantic similarity in chunk 4."
+  },
+  {
+    "question": "How does learning to rank (LTR) with hand-crafted features differ from deep neural ranking models?",
+    "relevant": [
+      {
+        "source_path": "data/papers/2102.11903v2.pdf",
+        "chunk_id": 2
+      }
+    ]
+  },
+  {
+    "question": "What benchmark does Blended RAG set on the SQUAD and NQ datasets for non-fine-tuned Q&A systems?",
+    "relevant": [
+      {
+        "source_path": "data/papers/2404.07220v2.pdf",
+        "chunk_id": 20
+      }
+    ],
+    "notes": "68% F1 on SQUAD, 42% EM on NQ."
+  },
+  {
+    "question": "In Blended RAG, how do storage requirements compare between the sparse and dense vector indexes on the HotPotQA corpus?",
+    "relevant": [
+      {
+        "source_path": "data/papers/2404.07220v2.pdf",
+        "chunk_id": 18
+      }
+    ],
+    "notes": "Sparse index: 10.5GB vs dense index: 50GB."
+  },
+  {
+    "question": "What problem does EVOR address in retrieval-augmented code generation, and what does it allow to evolve over time?",
+    "relevant": [
+      {
+        "source_path": "data/papers/2402.12317v2.pdf",
+        "chunk_id": 0
+      },
+      {
+        "source_path": "data/papers/2402.12317v2.pdf",
+        "chunk_id": 1
+      }
+    ],
+    "notes": "Problem: static knowledge bases (chunk 0); EVOR enables synchronous evolution of queries and documents (chunk 1)."
+  },
+  {
+    "question": "In multi-task retrieval-augmented generation training, what property of knowledge-intensive tasks is used to clean noisy training labels?",
+    "relevant": [
+      {
+        "source_path": "data/papers/2207.03030v1.pdf",
+        "chunk_id": 0
+      }
+    ],
+    "notes": "The connection of query-answer pairs to items in the knowledge base."
+  },
+  {
+    "question": "Which dataset and which three distinct techniques are compared for automated literature review generation?",
+    "relevant": [
+      {
+        "source_path": "data/papers/2411.18583v1.pdf",
+        "chunk_id": 1
+      }
+    ],
+    "notes": "SciTLDR dataset; spaCy (frequency-based), Simple T5 (transformer), and RAG with GPT-3.5-turbo."
+  },
+  {
+    "question": "What motivated the development of the Multi-Agent RAG system, and what is an example of two specialized agents it uses?",
+    "relevant": [
+      {
+        "source_path": "data/papers/2412.05838v1.pdf",
+        "chunk_id": 5
+      },
+      {
+        "source_path": "data/papers/2412.05838v1.pdf",
+        "chunk_id": 6
+      }
+    ],
+    "notes": "Motivation in chunk 5 (scalability/efficiency limits of a single agent); MySQL and MongoDB agent example in chunk 6."
+  },
+  {
+    "question": "According to the industry interview study, what is one of the main challenges in preparing a RAG system, and how are RAG systems primarily evaluated in practice?",
+    "relevant": [
+      {
+        "source_path": "data/papers/2508.14066v1.pdf",
+        "chunk_id": 6
+      }
+    ],
+    "notes": "Data preprocessing is a main challenge; evaluation is primarily done by humans, not automated LLM-based methods."
+  }
+]
