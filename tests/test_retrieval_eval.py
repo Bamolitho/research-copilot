@@ -144,3 +144,48 @@ class TestEvaluate:
         embedder = _embedder_returning([1, 0, 0, 0])
 
         assert evaluate([], store, embedder) == []
+
+    def test_result_carries_relevant_set_and_retrieved_chunks(self) -> None:
+        store = _populated_store()
+        embedder = _embedder_returning([1, 0, 0, 0])
+        gold_questions = [GoldQuestion(question="q", relevant={(SOURCE_A, 0)})]
+
+        results = evaluate(gold_questions, store, embedder, k=2)
+
+        assert results[0].relevant == {(SOURCE_A, 0)}
+        assert len(results[0].retrieved) == 2
+        assert results[0].retrieved[0].chunk.text == "about false positives in IDS"
+
+
+class TestPrintReportVerbose:
+    def test_verbose_shows_expected_and_retrieved_with_hit_marker(
+        self, capsys: pytest.CaptureFixture
+    ) -> None:
+        from evaluation.retrieval_eval import print_report
+
+        store = _populated_store()
+        embedder = _embedder_returning([1, 0, 0, 0])
+        gold_questions = [GoldQuestion(question="a question", relevant={(SOURCE_A, 0)})]
+        results = evaluate(gold_questions, store, embedder, k=2)
+
+        print_report(results, k=2, verbose=True)
+
+        output = capsys.readouterr().out
+        assert "expected:" in output
+        assert "retrieved:" in output
+        assert "\u2713" in output  # the correct chunk is marked as a hit
+        assert "about false positives in IDS" in output
+
+    def test_non_verbose_does_not_print_chunk_detail(self, capsys: pytest.CaptureFixture) -> None:
+        from evaluation.retrieval_eval import print_report
+
+        store = _populated_store()
+        embedder = _embedder_returning([1, 0, 0, 0])
+        gold_questions = [GoldQuestion(question="a question", relevant={(SOURCE_A, 0)})]
+        results = evaluate(gold_questions, store, embedder, k=2)
+
+        print_report(results, k=2, verbose=False)
+
+        output = capsys.readouterr().out
+        assert "expected:" not in output
+        assert "retrieved:" not in output
