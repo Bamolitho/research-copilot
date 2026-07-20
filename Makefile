@@ -7,7 +7,7 @@ QUESTION    ?= What are the main challenges of retrieval augmented generation?
 LLM_MODEL   ?= qwen3:4b
 
 .PHONY: help install sync setup test lint format check \
-        ollama-pull download index ask pipeline \
+        ollama-pull download index ask serve pipeline \
         clean clean-cache clean-index
 
 help: ## Show this help
@@ -47,6 +47,9 @@ index: ## Build the FAISS index from downloaded papers
 
 ask: ## Ask a question against the index (override with QUESTION=...)
 	uv run python3 -m scripts.ask "$(QUESTION)"
+
+serve: ## Run the API locally (http://127.0.0.1:8000, auto-reload)
+	uv run uvicorn api.main:get_app --factory --reload
 
 pipeline: download index ask ## Run everything end to end: download -> index -> ask
 	@echo ""
