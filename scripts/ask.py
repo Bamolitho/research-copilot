@@ -26,6 +26,7 @@ def ask(
     embedder: Embedder,
     generator: Generator,
     top_k: int = 5,
+    disable_thinking: bool = False,
 ) -> GeneratedAnswer:
     """Answer a question, grounded in the given index.
 
@@ -36,6 +37,10 @@ def ask(
             used to build `store`, or the similarity scores are meaningless.
         generator: LLM client used to generate the final answer.
         top_k: Number of chunks to retrieve as context.
+        disable_thinking: Passed through to llm.prompt.build_prompt --
+            turns off Qwen3's internal reasoning trace, a pure latency
+            cost for a context-grounded answer. Harmless no-op for
+            other models.
 
     Returns:
         The generated answer, with citations resolvable back to chunks.
@@ -49,7 +54,7 @@ def ask(
     if not results:
         raise ValueError("No indexed documents to search -- build the index first.")
 
-    prompt = build_prompt(question, results)
+    prompt = build_prompt(question, results, disable_thinking=disable_thinking)
     return generator.generate(prompt)
 
 
@@ -67,7 +72,11 @@ def _run_cli() -> None:
 
     store = FaissVectorStore.load(args.index_dir or settings.index_dir)
     embedder = Embedder(model_name=settings.embedding_model)
-    generator = Generator(base_url=settings.llm_base_url, model=settings.llm_model)
+    generator = Generator(
+        base_url=settings.llm_base_url,
+        model=settings.llm_model,
+        timeout=settings.llm_timeout_seconds,
+    )
 
     answer = ask(
         args.question,
@@ -75,6 +84,7 @@ def _run_cli() -> None:
         embedder=embedder,
         generator=generator,
         top_k=args.top_k or settings.top_k,
+        disable_thinking=settings.disable_llm_thinking,
     )
 
     print(answer.text)
