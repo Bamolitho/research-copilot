@@ -6,16 +6,15 @@ readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "faiss-cpu>=1.14.3",
+    "fastapi>=0.139.2",
+    "httpx>=0.28.1",
     "numpy>=2.5.1",
     "pymupdf>=1.28.0",
     "python-dotenv>=1.2.2",
     "requests>=2.34.2",
     "sentence-transformers>=5.6.0",
-<<<<<<< Updated upstream
-=======
     "streamlit>=1.61.1",
     "uvicorn>=0.51.0",
->>>>>>> Stashed changes
 ]
 
 [tool.ruff]
@@ -66,7 +65,7 @@ dev = [
     "pytest>=9.1.1",
     "ruff>=0.15.20",
 ]
- 
+
 [tool.mypy]
 mypy_path = "."
 explicit_package_bases = true
@@ -80,4 +79,3 @@ exclude = ["\\.venv", "data/"]
 [[tool.mypy.overrides]]
 module = "fitz.*"
 ignore_missing_imports = true
- 
