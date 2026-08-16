@@ -51,7 +51,7 @@ from ingestion.downloader import ArxivDownloader
 downloader = ArxivDownloader(download_dir="data/papers")
 papers = downloader.search("retrieval augmented generation", max_results=20)
 for paper in papers:
-    downloader.download(paper)          # add overwrite=True to force a re-download
+    downloader.download(paper)  # add overwrite=True to force a re-download
 ```
 
 ### Parsing PDFs
@@ -62,9 +62,9 @@ from ingestion.pdf_loader import PDFLoader, PDFParsingError
 loader = PDFLoader()
 document = loader.load("data/papers/2005.11401v4.pdf")
 
-print(document.page_count)              # number of pages
-print(document.pages[0].text)           # text of page 1
-print(document.full_text)               # all pages joined, for quick lookups
+print(document.page_count)  # number of pages
+print(document.pages[0].text)  # text of page 1
+print(document.full_text)  # all pages joined, for quick lookups
 ```
 
 `PDFLoader.load()` raises `FileNotFoundError` if the path doesn't exist, and `PDFParsingError` if the file exists but can't be read as a PDF (corrupted, wrong format, encrypted). Always catch both when looping over a directory of downloaded papers — one bad file shouldn't crash the whole ingestion run.
@@ -93,7 +93,7 @@ for chunk in chunks:
 from ingestion.embeddings import Embedder
 
 embedder = Embedder()  # loads BAAI/bge-m3 on first use (a real, ~2GB download)
-embedded_chunks = embedder.embed_chunks(chunks)      # once, at indexing time
+embedded_chunks = embedder.embed_chunks(chunks)  # once, at indexing time
 query_vector = embedder.embed_query("What are the challenges of ML-based IDS?")  # per question
 ```
 

@@ -13,6 +13,7 @@ dependencies = [
     "python-dotenv>=1.2.2",
     "requests>=2.34.2",
     "sentence-transformers>=5.6.0",
+    "streamlit>=1.61.1",
     "uvicorn>=0.51.0",
 ]
 
@@ -64,3 +65,17 @@ dev = [
     "pytest>=9.1.1",
     "ruff>=0.15.20",
 ]
+
+[tool.mypy]
+mypy_path = "."
+explicit_package_bases = true
+files = ["."]
+exclude = ["\\.venv", "data/"]
+
+# PyMuPDF ships no type stubs and no py.typed marker -- this is a
+# genuine gap in the library, not a bug in our code. Silencing it here
+# is deliberate and scoped to this one module, not a blanket
+# ignore_missing_imports for the whole project.
+[[tool.mypy.overrides]]
+module = "fitz.*"
+ignore_missing_imports = true

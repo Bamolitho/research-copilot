@@ -7,7 +7,7 @@ QUESTION    ?= What are the main challenges of retrieval augmented generation?
 LLM_MODEL   ?= qwen3:4b
 
 .PHONY: help install sync setup test lint format check \
-        ollama-pull download index ask serve pipeline \
+        ollama-pull download index ask serve ui pipeline \
         clean clean-cache clean-index
 
 help: ## Show this help
@@ -34,7 +34,7 @@ lint: ## Lint the codebase with ruff
 format: ## Auto-format the codebase with ruff
 	uv run ruff format .
 
-check: lint test ## Lint then test -- run before every commit
+check: lint test ## Lint then test, run before every commit
 
 ollama-pull: ## Pull the default local LLM via Ollama (override with LLM_MODEL=...)
 	ollama pull $(LLM_MODEL)
@@ -50,6 +50,9 @@ ask: ## Ask a question against the index (override with QUESTION=...)
 
 serve: ## Run the API locally (http://127.0.0.1:8000, auto-reload)
 	uv run uvicorn api.main:get_app --factory --reload
+
+ui: ## Run the Streamlit frontend (needs `make serve` running in another terminal)
+	uv run streamlit run frontend/app.py
 
 pipeline: download index ask ## Run everything end to end: download -> index -> ask
 	@echo ""

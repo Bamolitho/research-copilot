@@ -45,7 +45,9 @@ answer = generator.generate(prompt)
 
 print(answer.text)
 for number, result in answer.citations.items():
-    print(f"[{number}] {result.chunk.source_path} (page {result.chunk.page_start}), score={result.score:.2f}")
+    print(
+        f"[{number}] {result.chunk.source_path} (page {result.chunk.page_start}), score={result.score:.2f}"
+    )
 ```
 
 - `build_prompt` raises `ValueError` if `results` is empty — decide explicitly what to tell the user when retrieval finds nothing (e.g. "no relevant documents found"), rather than silently prompting the model with no grounding at all.
@@ -67,11 +69,13 @@ No `auth_header_provider` needed — Ollama on localhost has no auth.
 import google.auth.transport.requests
 import google.oauth2.id_token
 
+
 def _gcp_auth_header() -> str:
     token = google.oauth2.id_token.fetch_id_token(
         google.auth.transport.requests.Request(), audience=CLOUD_RUN_SERVICE_URL
     )
     return f"Bearer {token}"
+
 
 generator = Generator(
     base_url=f"{CLOUD_RUN_SERVICE_URL}/v1",
