@@ -40,9 +40,9 @@ chunks = Chunker().split(document)
 embedder = Embedder()
 embedded_chunks = embedder.embed_chunks(chunks)
 
-store = FaissVectorStore(dimension=1024)   # 1024 = BGE-M3's embedding size
+store = FaissVectorStore(dimension=1024)  # 1024 = BGE-M3's embedding size
 store.add(chunks, embedded_chunks)
-store.save("data/index")                   # writes index.faiss + chunks.json
+store.save("data/index")  # writes index.faiss + chunks.json
 
 # Querying (per question, no re-embedding of the corpus)
 store = FaissVectorStore.load("data/index")
