@@ -1,0 +1,65 @@
+name: CI - Research copilot
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# Cancel any in-progress run on the same ref when a new push arrives.
+# This avoids wasting CI minutes on outdated commits.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint, type check, test
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.0.1
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version-file: ".python-version"
+
+      - name: Install dependencies
+        run: uv sync --all-groups
+
+      - name: Ruff lint
+        run: uv run ruff check .
+
+      - name: Ruff format check
+        run: uv run ruff format --check .
+
+      # Mypy does static type checking. It catches bugs that tests miss,
+      # like passing a str where an int is expected, or calling a method
+      # that does not exist on a type.
+      # File selection is driven entirely by [tool.mypy] in pyproject.toml,
+      # not by arguments here, so this command always matches what you run
+      # locally with `uv run mypy .`.
+      - name: Mypy
+        run: uv run mypy .
+        continue-on-error: true
+        # continue-on-error: true while the codebase is being annotated
+        # incrementally. Remove this line once mypy passes cleanly with
+        # zero errors, so future regressions actually fail the build.
+
+      - name: Pytest
+        run: uv run pytest tests/ -v --junitxml=report.xml
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results
+          path: report.xml
+          retention-days: 7

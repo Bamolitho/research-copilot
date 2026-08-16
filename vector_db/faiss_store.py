@@ -54,7 +54,7 @@ class FaissVectorStore:
 
     def __init__(self, dimension: int) -> None:
         self.dimension = dimension
-        self._index = faiss.IndexFlatIP(dimension)
+        self._index: faiss.Index = faiss.IndexFlatIP(dimension)
         self._chunks_by_position: list[Chunk] = []
 
     @property
