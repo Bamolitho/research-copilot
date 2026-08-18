@@ -1,0 +1,36 @@
+# syntax=docker/dockerfile:1
+#
+# Base image for the API service: system dependencies, uv-managed
+# Python dependencies, and the BGE-M3 embedding model baked in.
+#
+# Built and pushed MANUALLY, deliberately never part of the CD
+# pipeline:
+#   docker build -f api/Dockerfile.base -t research-copilot-api-base:latest .
+#   docker tag research-copilot-api-base:latest <dockerhub-user>/research-copilot-api-base:latest
+#   docker push <dockerhub-user>/research-copilot-api-base:latest
+#
+# Or simply: make docker-build-api-base && make docker-push-api-base
+#
+# Rebuild and push again only when the embedding model or an api
+# dependency changes, never for an ordinary code change. Everyday
+# pushes never rebuild this image, and therefore never re-download
+# the model.
+
+FROM python:3.14-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
+
+WORKDIR /app
+
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-dev --extra api
+
+ENV HF_HOME=/opt/hf-cache
+ARG EMBEDDING_MODEL=BAAI/bge-m3
+RUN uv run python3 -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('${EMBEDDING_MODEL}')"
+
+ENV PATH="/app/.venv/bin:$PATH"
