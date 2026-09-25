@@ -1,13 +1,15 @@
 .DEFAULT_GOAL := help
 
 # ---- Configurable overrides, e.g. `make ask QUESTION="..."` ----------------
-QUERY       ?= retrieval augmented generation
-MAX_RESULTS ?= 20
-QUESTION    ?= What are the main challenges of retrieval augmented generation?
-LLM_MODEL   ?= qwen3:4b
+QUERY              ?= retrieval augmented generation
+MAX_RESULTS        ?= 20
+QUESTION           ?= What are the main challenges of retrieval augmented generation?
+LLM_MODEL          ?= qwen3:4b
+DOCKERHUB_USERNAME ?=
 
 .PHONY: help install sync setup test lint format check \
         ollama-pull download index ask serve ui pipeline \
+        docker-build-api-base docker-push-api-base docker-build-api docker-build-frontend \
         clean clean-cache clean-index
 
 help: ## Show this help
@@ -16,8 +18,8 @@ help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort \
 		| awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
 
-install: ## Install/sync all dependencies (uv sync)
-	uv sync
+install: ## Install/sync all dependencies, all services included (uv sync)
+	uv sync --all-extras
 
 sync: install ## Alias for install
 
@@ -53,6 +55,20 @@ serve: ## Run the API locally (http://127.0.0.1:8000, auto-reload)
 
 ui: ## Run the Streamlit frontend (needs `make serve` running in another terminal)
 	uv run streamlit run frontend/app.py
+
+docker-build-api-base: ## Build the API base image (model baked in). Run rarely: only when the embedding model or api dependencies change.
+	docker build -f api/Dockerfile.base -t research-copilot-api-base:latest .
+
+docker-push-api-base: ## Push the API base image to Docker Hub. Requires DOCKERHUB_USERNAME=<your-username>
+	@[ -n "$(DOCKERHUB_USERNAME)" ] || (echo "Set DOCKERHUB_USERNAME=<your-username>" && exit 1)
+	docker tag research-copilot-api-base:latest $(DOCKERHUB_USERNAME)/research-copilot-api-base:latest
+	docker push $(DOCKERHUB_USERNAME)/research-copilot-api-base:latest
+
+docker-build-api: docker-build-api-base ## Build the API application image locally (builds the base first, cheap no-op if unchanged)
+	docker build -f api/Dockerfile -t research-copilot-api:latest .
+
+docker-build-frontend: ## Build the frontend Docker image
+	docker build -f frontend/Dockerfile -t research-copilot-frontend:latest .
 
 pipeline: download index ask ## Run everything end to end: download -> index -> ask
 	@echo ""
