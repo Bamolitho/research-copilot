@@ -5,16 +5,21 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
-    "faiss-cpu>=1.14.3",
-    "fastapi>=0.139.2",
-    "httpx>=0.28.1",
-    "numpy>=2.5.1",
-    "pymupdf>=1.28.0",
     "python-dotenv>=1.2.2",
     "requests>=2.34.2",
+]
+
+[project.optional-dependencies]
+api = [
+    "faiss-cpu>=1.14.3",
+    "fastapi>=0.139.2",
+    "numpy>=2.5.1",
+    "pymupdf>=1.28.0",
     "sentence-transformers>=5.6.0",
-    "streamlit>=1.61.1",
     "uvicorn>=0.51.0",
+]
+frontend = [
+    "streamlit>=1.61.1",
 ]
 
 [tool.ruff]
@@ -61,6 +66,7 @@ indent-style = "space"
 
 [dependency-groups]
 dev = [
+    "httpx>=0.28.1",
     "mypy>=2.2.0",
     "pytest>=9.1.1",
     "ruff>=0.15.20",
@@ -72,7 +78,7 @@ explicit_package_bases = true
 files = ["."]
 exclude = ["\\.venv", "data/"]
 
-# PyMuPDF ships no type stubs and no py.typed marker -- this is a
+# PyMuPDF ships no type stubs and no py.typed marker. This is a
 # genuine gap in the library, not a bug in our code. Silencing it here
 # is deliberate and scoped to this one module, not a blanket
 # ignore_missing_imports for the whole project.
