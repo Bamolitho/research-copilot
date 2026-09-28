@@ -1,4 +1,5 @@
-*.ppt
+BROUILLON_README.md
+*.pptx
 projet.md
 dev/
 data/papers/*

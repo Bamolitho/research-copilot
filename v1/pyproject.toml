@@ -1,0 +1,87 @@
+[project]
+name = "research-copilot"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "python-dotenv>=1.2.2",
+    "requests>=2.34.2",
+]
+
+[project.optional-dependencies]
+api = [
+    "faiss-cpu>=1.14.3",
+    "fastapi>=0.139.2",
+    "numpy>=2.5.1",
+    "pymupdf>=1.28.0",
+    "sentence-transformers>=5.6.0",
+    "uvicorn>=0.51.0",
+]
+frontend = [
+    "streamlit>=1.61.1",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+src = ["ingestion", "vector_db", "llm", "api", "frontend", "evaluation"]
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort, import sorting
+    "N",      # pep8-naming
+    "UP",     # pyupgrade, modern syntax
+    "B",      # flake8-bugbear, common bug patterns
+    "C4",     # flake8-comprehensions
+    "SIM",    # flake8-simplify
+    "PTH",    # flake8-use-pathlib
+    "A",      # flake8-builtins, no shadowing builtins
+    "ARG",    # flake8-unused-arguments
+    "TID",    # flake8-tidy-imports
+    "PERF",   # perflint, obvious performance issues
+    "RUF",    # ruff-specific rules
+]
+ignore = [
+    "E501",   # line length is enforced by the formatter, not the linter
+]
+
+[tool.ruff.lint.per-file-ignores]
+"evaluation/*" = ["ARG001"]  # eval scripts often take unused CLI-style args
+"**/tests/*" = ["ARG", "S101"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["ingestion", "vector_db", "llm", "api", "frontend", "evaluation"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "mypy>=2.2.0",
+    "pytest>=9.1.1",
+    "ruff>=0.15.20",
+]
+
+[tool.mypy]
+mypy_path = "."
+explicit_package_bases = true
+files = ["."]
+exclude = ["\\.venv", "data/"]
+
+# PyMuPDF ships no type stubs and no py.typed marker. This is a
+# genuine gap in the library, not a bug in our code. Silencing it here
+# is deliberate and scoped to this one module, not a blanket
+# ignore_missing_imports for the whole project.
+[[tool.mypy.overrides]]
+module = "fitz.*"
+ignore_missing_imports = true
