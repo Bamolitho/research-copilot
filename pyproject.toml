@@ -1,31 +1,24 @@
 [project]
 name = "research-copilot"
-version = "0.1.0"
+version = "0.2.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
-    "python-dotenv>=1.2.2",
-    "requests>=2.34.2",
-]
-
-[project.optional-dependencies]
-api = [
-    "faiss-cpu>=1.14.3",
-    "fastapi>=0.139.2",
-    "numpy>=2.5.1",
-    "pymupdf>=1.28.0",
-    "sentence-transformers>=5.6.0",
-    "uvicorn>=0.51.0",
-]
-frontend = [
-    "streamlit>=1.61.1",
+    "ipython>=9.17.1",
+    "langchain>=1.4.2",
+    "langchain-core>=1.6.5",
+    "langchain-openai>=1.6.6",
+    "langchain-openrouter>=0.2.9",
+    "langgraph>=1.2.12",
+    "pydantic>=2.13.5",
+    "pydantic-settings>=2.15.0",
+    "rich>=15.0.0",
 ]
 
 [tool.ruff]
 line-length = 100
 target-version = "py314"
-src = ["ingestion", "vector_db", "llm", "api", "frontend", "evaluation"]
 
 [tool.ruff.lint]
 select = [
@@ -66,17 +59,14 @@ indent-style = "space"
 
 [dependency-groups]
 dev = [
-    "httpx>=0.28.1",
     "mypy>=2.2.0",
     "pytest>=9.1.1",
     "ruff>=0.15.20",
 ]
 
 [tool.mypy]
-mypy_path = "."
 explicit_package_bases = true
-files = ["."]
-exclude = ["\\.venv", "data/"]
+exclude = ["\\.venv", "data/", "v1/"]
 
 # PyMuPDF ships no type stubs and no py.typed marker. This is a
 # genuine gap in the library, not a bug in our code. Silencing it here

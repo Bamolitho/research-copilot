@@ -1,0 +1,63 @@
+<svg width="1200" height="500" viewBox="0 0 1200 500" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe Print','Kalam','Comic Sans MS',cursive">
+  <defs>
+    <filter id="roughen" x="-20%" y="-200%" width="140%" height="500%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="7" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="3.2"/>
+    </filter>
+    <marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M1,1 L9,5 L1,9 Z" fill="#495057"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1200" height="500" fill="#ffffff"/>
+
+  <text x="600" y="42" text-anchor="middle" font-size="27" fill="#1e1e1e">Research Copilot, architecture</text>
+  <text x="600" y="68" text-anchor="middle" font-size="15" fill="#757575" font-family="'Segoe UI', sans-serif">From raw PDFs to grounded answers</text>
+
+  <!-- Zone 1: Ingestion -->
+  <rect x="40" y="100" width="340" height="340" rx="22" fill="#c3fae8" fill-opacity="0.35" stroke="#0f766e" stroke-width="2" filter="url(#roughen)"/>
+  <text x="60" y="134" font-size="21" fill="#0f766e">Ingestion</text>
+
+  <rect x="60" y="170" width="300" height="50" rx="12" fill="#96f2d7" stroke="#0f766e" stroke-width="2" filter="url(#roughen)"/>
+  <text x="210" y="200" text-anchor="middle" font-size="15" fill="#0f766e">PDF corpus, raw papers</text>
+  <path d="M210,220 L210,238" stroke="#495057" stroke-width="2.5" fill="none" marker-end="url(#arrowhead)"/>
+
+  <rect x="60" y="238" width="300" height="50" rx="12" fill="#96f2d7" stroke="#0f766e" stroke-width="2" filter="url(#roughen)"/>
+  <text x="210" y="268" text-anchor="middle" font-size="15" fill="#0f766e">Text extraction, PyMuPDF</text>
+  <path d="M210,288 L210,306" stroke="#495057" stroke-width="2.5" fill="none" marker-end="url(#arrowhead)"/>
+
+  <rect x="60" y="306" width="300" height="50" rx="12" fill="#96f2d7" stroke="#0f766e" stroke-width="2" filter="url(#roughen)"/>
+  <text x="210" y="336" text-anchor="middle" font-size="15" fill="#0f766e">Chunking into passages</text>
+  <path d="M210,356 L210,374" stroke="#495057" stroke-width="2.5" fill="none" marker-end="url(#arrowhead)"/>
+
+  <rect x="60" y="374" width="300" height="50" rx="12" fill="#96f2d7" stroke="#0f766e" stroke-width="2" filter="url(#roughen)"/>
+  <text x="210" y="404" text-anchor="middle" font-size="15" fill="#0f766e">Embeddings, BGE-M3</text>
+
+  <!-- Zone 2: Retrieval -->
+  <rect x="430" y="100" width="340" height="340" rx="22" fill="#e5dbff" fill-opacity="0.35" stroke="#6d28d9" stroke-width="2" filter="url(#roughen)"/>
+  <text x="450" y="134" font-size="21" fill="#5b21b6">Retrieval</text>
+
+  <rect x="450" y="250" width="300" height="50" rx="12" fill="#d0bfff" stroke="#6d28d9" stroke-width="2" filter="url(#roughen)"/>
+  <text x="600" y="280" text-anchor="middle" font-size="15" fill="#5b21b6">Vector store, FAISS</text>
+  <path d="M600,300 L600,318" stroke="#495057" stroke-width="2.5" fill="none" marker-end="url(#arrowhead)"/>
+
+  <rect x="450" y="318" width="300" height="50" rx="12" fill="#d0bfff" stroke="#6d28d9" stroke-width="2" filter="url(#roughen)"/>
+  <text x="600" y="348" text-anchor="middle" font-size="15" fill="#5b21b6">Similarity search, top-k</text>
+
+  <!-- Zone 3: Generation -->
+  <rect x="820" y="100" width="340" height="340" rx="22" fill="#ffe8cc" fill-opacity="0.35" stroke="#c2410c" stroke-width="2" filter="url(#roughen)"/>
+  <text x="840" y="134" font-size="21" fill="#9a3412">Generation</text>
+
+  <rect x="840" y="250" width="300" height="50" rx="12" fill="#ffd8a8" stroke="#c2410c" stroke-width="2" filter="url(#roughen)"/>
+  <text x="990" y="280" text-anchor="middle" font-size="15" fill="#9a3412">LLM synthesis, grounded prompt</text>
+  <path d="M990,300 L990,318" stroke="#495057" stroke-width="2.5" fill="none" marker-end="url(#arrowhead)"/>
+
+  <rect x="840" y="318" width="300" height="50" rx="12" fill="#ffd8a8" stroke="#c2410c" stroke-width="2" filter="url(#roughen)"/>
+  <text x="990" y="348" text-anchor="middle" font-size="15" fill="#9a3412">Answer with citations</text>
+
+  <!-- connecting arrows between zones -->
+  <path d="M380,270 L428,270" stroke="#495057" stroke-width="2.5" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M770,270 L818,270" stroke="#495057" stroke-width="2.5" fill="none" marker-end="url(#arrowhead)"/>
+
+  <text x="600" y="474" text-anchor="middle" font-size="14" fill="#868e96" font-family="'Segoe UI', sans-serif">Every answer is grounded in the retrieved passages, and cites them by number, excerpt and similarity score</text>
+</svg>
