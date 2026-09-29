@@ -2,8 +2,12 @@ import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
 
-from langchain_core.tools import tool
+from langchain_core.tools import tool, InjectedToolCallId
+from langchain_core.messages import ToolMessage
+from langgraph.types import Command
+
 from pydantic import HttpUrl
+from typing import Annotated
 
 from src.pydantic_models.source import Source
 
@@ -16,8 +20,24 @@ ATOM_NS = {
 
 
 @tool
-async def arxiv_search(query: str) -> list[Source]:
-    """Search scientific papers on arXiv."""
+async def arxiv_search(query: str, tool_call_id: Annotated[str, InjectedToolCallId]) -> Command:
+    """Search scientific papers on arXiv.
+
+    Searches arXiv for relevant papers and updates the graph state with
+    structured research sources. The tool_call_id is injected automatically
+    by LangGraph and is used to associate the ToolMessage with the
+    corresponding tool call.
+
+    Args:
+        query: Search query used against arXiv.
+        tool_call_id: Automatically injected identifier of the tool call.
+
+    Returns:
+        Command updating the state with:
+        - sources: A list of structured Source objects, e.g.
+          [Source(...), Source(...), ...].
+        - messages: A ToolMessage confirming the number of sources found.
+    """
 
     params = urllib.parse.urlencode(
         {
@@ -72,4 +92,14 @@ async def arxiv_search(query: str) -> list[Source]:
             )
         )
 
-    return sources
+    return Command(
+        update={
+            "sources": sources,
+            "messages": [
+                ToolMessage(
+                    content=f"Found {len(sources)} research sources.",
+                    tool_call_id=tool_call_id,
+                )
+            ],
+        }
+    )

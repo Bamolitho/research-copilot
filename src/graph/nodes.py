@@ -9,6 +9,18 @@ planner_with_tools = planner_llm.bind_tools([arxiv_search])
 
 
 async def planner(state: ResearchState) -> dict:
+    """Plan research by selecting the tools required to answer the question.
+
+    Loads the planner system prompt, combines it with the current message
+    history, and invokes the planner LLM. The LLM may return tool calls
+    that are subsequently executed by the appropriate ToolNode.
+
+    Args:
+        state: Current research graph state containing the message history.
+
+    Returns:
+        A dictionary containing the planner AIMessage in ``messages``.
+    """
     planner_system_prompt = load_prompt("planner")
 
     messages = [
@@ -21,50 +33,27 @@ async def planner(state: ResearchState) -> dict:
     return {"messages": [response]}
 
 
-async def arxiv_tool_node(state: ResearchState) -> dict:
-    last_message = state["messages"][-1]
-
-    if not isinstance(last_message, AIMessage):
-        return {
-            "messages": [],
-            "sources": [],
-        }
-
-    tool_messages = []
-    sources = []
-
-    for tool_call in last_message.tool_calls:
-        if tool_call["name"] != "arxiv_search":
-            continue
-
-        result = await arxiv_search.ainvoke(tool_call["args"])
-        sources.extend(result)
-
-        content = "\n\n".join(
-            f"Title: {source.title}\n"
-            f"Authors: {', '.join(source.authors)}\n"
-            f"Abstract: {source.abstract}\n"
-            f"URL: {source.url}"
-            for source in result
-        )
-
-        tool_messages.append(
-            ToolMessage(
-                content=content,
-                tool_call_id=tool_call["id"],
-                name="arxiv_search",
-            )
-        )
-
-    return {
-        "messages": tool_messages,
-        "sources": sources,
-    }
-
-
 async def generate_answer(state: ResearchState) -> dict:
-    system_prompt = load_prompt("generate_answer")
+    """Generate the final answer from the question and structured sources.
 
+    Loads the answer generator system prompt and builds a textual research
+    context from the structured sources in the state. Each source is
+    serialized as text and separated by blank lines before being provided
+    to the answer LLM.
+
+    Args:
+        state: Current research graph state containing the question and
+            structured research sources.
+
+    Returns:
+        A dictionary containing:
+        - messages: The generated AIMessage.
+        - answer: The generated answer as a string.
+    """
+    generator_system_prompt = load_prompt("generate_answer")
+
+    # Serialize each source as text separated by blank lines before being provided to the LLM
+    to the answer LLM
     sources_context = "\n\n".join(
         f"Title: {source.title}\n"
         f"Authors: {', '.join(source.authors)}\n"
@@ -75,7 +64,7 @@ async def generate_answer(state: ResearchState) -> dict:
     )
 
     messages = [
-        SystemMessage(content=system_prompt),
+        SystemMessage(content=generator_system_prompt),
         HumanMessage(
             content=(f"Question: {state['question']}\n\nResearch sources:\n\n{sources_context}")
         ),
