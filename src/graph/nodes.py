@@ -1,4 +1,4 @@
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
+from langchain_core.messages import HumanMessage, SystemMessage
 
 from src.graph.states import ResearchState
 from src.llm.clients import answer_llm, planner_llm
@@ -52,8 +52,7 @@ async def generate_answer(state: ResearchState) -> dict:
     """
     generator_system_prompt = load_prompt("generate_answer")
 
-    # Serialize each source as text separated by blank lines before being provided to the LLM
-    to the answer LLM
+    # Serialize each source as text separated by blank lines before being provided to the answer LLM
     sources_context = "\n\n".join(
         f"Title: {source.title}\n"
         f"Authors: {', '.join(source.authors)}\n"
