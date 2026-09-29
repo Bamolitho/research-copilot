@@ -23,9 +23,9 @@ async def arxiv_search(query: str, tool_call_id: Annotated[str, InjectedToolCall
     """Search scientific papers on arXiv.
 
     Searches arXiv for relevant papers and updates the graph state with
-    structured research sources. The tool_call_id is injected automatically
-    by LangGraph and is used to associate the ToolMessage with the
-    corresponding tool call.
+    the research query and its corresponding structured sources. The
+    tool_call_id is injected automatically by LangGraph and is used to
+    associate the ToolMessage with the corresponding tool call.
 
     Args:
         query: Search query used against arXiv.
@@ -33,11 +33,10 @@ async def arxiv_search(query: str, tool_call_id: Annotated[str, InjectedToolCall
 
     Returns:
         Command updating the state with:
-        - sources: A list of structured Source objects, e.g.
-          [Source(...), Source(...), ...].
+        - research_results: A research result containing the query and
+          its corresponding list of structured Source objects, e.g. [Source(...), Source(...), ...].
         - messages: A ToolMessage confirming the number of sources found.
     """
-
     params = urllib.parse.urlencode(
         {
             "search_query": f"all:{query}",
@@ -93,7 +92,12 @@ async def arxiv_search(query: str, tool_call_id: Annotated[str, InjectedToolCall
 
     return Command(
         update={
-            "sources": sources,
+            "research_results": [
+                {
+                    "query": query,
+                    "sources": sources,
+                }
+            ],
             "messages": [
                 ToolMessage(
                     content=f"Found {len(sources)} research sources.",

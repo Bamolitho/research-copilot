@@ -8,9 +8,11 @@ class Settings(BaseSettings):
     APP_VERSION: str = "2.0.0"
     DEBUG: bool = False
 
-    # LLM MODELS
+    # LLM PARAMETERS
     PLANNER_MODEL: str
     GENERATOR_MODEL: str
+    TEMPERATURE: float
+    MAX_TOKENS: int
 
     # API KEYS
     OPEN_ROUTER_API_KEY: SecretStr
