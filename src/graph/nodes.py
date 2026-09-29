@@ -34,16 +34,16 @@ async def planner(state: ResearchState) -> dict:
 
 
 async def generate_answer(state: ResearchState) -> dict:
-    """Generate the final answer from the question and structured sources.
+    """Generate the final answer from the question and research results.
 
     Loads the answer generator system prompt and builds a textual research
-    context from the structured sources in the state. Each source is
-    serialized as text and separated by blank lines before being provided
-    to the answer LLM.
+    context from the research results in the state. Each research query is
+    included together with its corresponding structured sources before
+    being provided to the answer LLM.
 
     Args:
         state: Current research graph state containing the question and
-            structured research sources.
+            research results grouped by query.
 
     Returns:
         A dictionary containing:
@@ -54,12 +54,17 @@ async def generate_answer(state: ResearchState) -> dict:
 
     # Serialize each source as text separated by blank lines before being provided to the answer LLM
     sources_context = "\n\n".join(
-        f"Title: {source.title}\n"
-        f"Authors: {', '.join(source.authors)}\n"
-        f"Abstract: {source.abstract}\n"
-        f"arXiv: {source.arxiv_id}\n"
-        f"URL: {source.url}"
-        for source in state["sources"]
+        f"Research query: {result['query']}\n"
+        + "\n\n".join(
+            f"Source {index}:\n"
+            f"Title: {source.title}\n"
+            f"Authors: {', '.join(source.authors)}\n"
+            f"Abstract: {source.abstract}\n"
+            f"arXiv ID: {source.arxiv_id}\n"
+            f"URL: {source.url}"
+            for source in result["sources"]
+        )
+        for index, result in enumerate(state["research_results"], start=1)
     )
 
     messages = [
